@@ -2,11 +2,17 @@ const imageInput = document.getElementById('imageInput');
 const imageTitle = document.getElementById('imageTitle');
 const addImageBtn = document.getElementById('addImageBtn');
 const gallery = document.getElementById('gallery');
+const clearGalleryBtn = document.getElementById('clearGalleryBtn');
 
 let images = JSON.parse(localStorage.getItem('galleryImages')) || [];
 
+function saveImages() {
+  localStorage.setItem('galleryImages', JSON.stringify(images));
+}
+
 function displayGallery() {
   gallery.innerHTML = '';
+
   if (images.length === 0) {
     gallery.innerHTML = '<p class="empty">No images in gallery yet.</p>';
     return;
@@ -15,12 +21,23 @@ function displayGallery() {
   images.forEach((img, index) => {
     const div = document.createElement('div');
     div.className = 'item';
-    div.innerHTML = `
-      <img src="${img.src}" alt="${img.title}">
-      <p id="title-${index}">${img.title}</p>
-      <button onclick="editImage(${index})">Edit</button>
-      <button onclick="deleteImage(${index})">Delete</button>
-    `;
+
+    const image = document.createElement('img');
+    image.src = img.src;
+    image.alt = img.title;
+
+    const title = document.createElement('p');
+    title.textContent = img.title;
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => editImage(index));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', () => deleteImage(index));
+
+    div.append(image, title, editBtn, deleteBtn);
     gallery.appendChild(div);
   });
 }
@@ -28,21 +45,22 @@ function displayGallery() {
 // ==== Add Image ====
 addImageBtn.addEventListener('click', () => {
   const file = imageInput.files[0];
-  const title = imageTitle.value.trim();
+  let title = imageTitle.value.trim();
 
-  if (!file || !title) {
-    alert('Please select an image and enter a title.');
-    return;
-  }
+if (!file) {
+  alert('Please select an image.');
+  return;
+}
+
+if (!title) {
+  title = file.name;
+}
+
 
   const reader = new FileReader();
-  reader.onload = function (e) {
-    const newImage = {
-      src: e.target.result,
-      title: title
-    };
-    images.push(newImage);
-    localStorage.setItem('galleryImages', JSON.stringify(images));
+  reader.onload = e => {
+    images.push({ src: e.target.result, title });
+    saveImages();
     displayGallery();
   };
   reader.readAsDataURL(file);
@@ -51,21 +69,32 @@ addImageBtn.addEventListener('click', () => {
   imageTitle.value = '';
 });
 
+// ==== Edit Image ====
 function editImage(index) {
   const newTitle = prompt('Enter new title:', images[index].title);
-  if (newTitle && newTitle.trim() !== '') {
+  if (newTitle && newTitle.trim()) {
     images[index].title = newTitle.trim();
-    localStorage.setItem('galleryImages', JSON.stringify(images));
+    saveImages();
     displayGallery();
   }
 }
 
+// ==== Delete Image ====
 function deleteImage(index) {
-  if (confirm('Are you sure you want to delete this image?')) {
+  if (confirm('Delete this image?')) {
     images.splice(index, 1);
-    localStorage.setItem('galleryImages', JSON.stringify(images));
+    saveImages();
     displayGallery();
   }
 }
+
+// ==== Clear Gallery ====
+clearGalleryBtn.addEventListener('click', () => {
+  if (confirm('Clear entire gallery?')) {
+    images = [];
+    localStorage.removeItem('galleryImages');
+    displayGallery();
+  }
+});
 
 displayGallery();
