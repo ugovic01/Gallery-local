@@ -3,6 +3,8 @@ const imageTitle = document.getElementById('imageTitle');
 const addImageBtn = document.getElementById('addImageBtn');
 const gallery = document.getElementById('gallery');
 const clearGalleryBtn = document.getElementById('clearGalleryBtn');
+const searchInput = document.getElementById('searchInput');
+
 
 let images = JSON.parse(localStorage.getItem('galleryImages')) || [];
 
@@ -10,7 +12,7 @@ function saveImages() {
   localStorage.setItem('galleryImages', JSON.stringify(images));
 }
 
-function displayGallery() {
+function displayGallery(filterText = '') {
   gallery.innerHTML = '';
 
   if (images.length === 0) {
@@ -18,7 +20,12 @@ function displayGallery() {
     return;
   }
 
-  images.forEach((img, index) => {
+  images
+  .filter(img =>
+    img.title.toLowerCase().includes(filterText.toLowerCase())
+  )
+  .forEach((img, index) => {
+
     const div = document.createElement('div');
     div.className = 'item';
 
@@ -40,6 +47,8 @@ function displayGallery() {
     div.append(image, title, editBtn, deleteBtn);
     gallery.appendChild(div);
   });
+
+
 }
 
 // ==== Add Image ====
@@ -96,5 +105,10 @@ clearGalleryBtn.addEventListener('click', () => {
     displayGallery();
   }
 });
+// ==== Search / Filter ====
+searchInput.addEventListener('input', () => {
+  console.log(searchInput.value);
+});
 
 displayGallery();
+
