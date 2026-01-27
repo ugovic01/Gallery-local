@@ -4,7 +4,7 @@ const addImageBtn = document.getElementById('addImageBtn');
 const gallery = document.getElementById('gallery');
 const clearGalleryBtn = document.getElementById('clearGalleryBtn');
 const searchInput = document.getElementById('searchInput');
-
+const preview = document.getElementById('preview');
 
 let images = JSON.parse(localStorage.getItem('galleryImages')) || [];
 
@@ -12,103 +12,103 @@ function saveImages() {
   localStorage.setItem('galleryImages', JSON.stringify(images));
 }
 
-function displayGallery(filterText = '') {
+function displayGallery(list = images) {
   gallery.innerHTML = '';
 
-  if (images.length === 0) {
-    gallery.innerHTML = '<p class="empty">No images in gallery yet.</p>';
+  if (list.length === 0) {
+    gallery.innerHTML = '<p class="empty">No images found.</p>';
     return;
   }
 
-  images
-  .filter(img =>
-    img.title.toLowerCase().includes(filterText.toLowerCase())
-  )
-  .forEach((img, index) => {
-
+  list.forEach((img, index) => {
     const div = document.createElement('div');
     div.className = 'item';
 
     const image = document.createElement('img');
     image.src = img.src;
-    image.alt = img.title;
 
     const title = document.createElement('p');
     title.textContent = img.title;
 
     const editBtn = document.createElement('button');
     editBtn.textContent = 'Edit';
-    editBtn.addEventListener('click', () => editImage(index));
+    editBtn.onclick = () => editImage(index);
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
-    deleteBtn.addEventListener('click', () => deleteImage(index));
+    deleteBtn.onclick = () => deleteImage(index);
 
     div.append(image, title, editBtn, deleteBtn);
     gallery.appendChild(div);
   });
-
-
 }
 
-// ==== Add Image ====
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    preview.innerHTML = `<img src="${reader.result}" />`;
+  };
+  reader.readAsDataURL(file);
+});
+
 addImageBtn.addEventListener('click', () => {
   const file = imageInput.files[0];
   let title = imageTitle.value.trim();
 
-if (!file) {
-  alert('Please select an image.');
-  return;
-}
+  if (!file) {
+    alert('Select an image first');
+    return;
+  }
 
-if (!title) {
-  title = file.name;
-}
-
+  if (!title) title = file.name;
 
   const reader = new FileReader();
-  reader.onload = e => {
-    images.push({ src: e.target.result, title });
+  reader.onload = () => {
+    images.push({ src: reader.result, title });
     saveImages();
     displayGallery();
+
+    imageInput.value = '';
+    imageTitle.value = '';
+    preview.innerHTML = '';
   };
   reader.readAsDataURL(file);
-
-  imageInput.value = '';
-  imageTitle.value = '';
 });
 
-// ==== Edit Image ====
+searchInput.addEventListener('input', () => {
+  const value = searchInput.value.toLowerCase();
+  const filtered = images.filter(img =>
+    img.title.toLowerCase().includes(value)
+  );
+  displayGallery(filtered);
+});
+
+clearGalleryBtn.addEventListener('click', () => {
+  if (confirm('Clear gallery?')) {
+    images = [];
+    localStorage.clear();
+    displayGallery();
+  }
+});
+
 function editImage(index) {
-  const newTitle = prompt('Enter new title:', images[index].title);
-  if (newTitle && newTitle.trim()) {
+  const newTitle = prompt('New title:', images[index].title);
+  if (newTitle) {
     images[index].title = newTitle.trim();
     saveImages();
     displayGallery();
   }
 }
 
-// ==== Delete Image ====
 function deleteImage(index) {
-  if (confirm('Delete this image?')) {
+  if (confirm('Delete image?')) {
     images.splice(index, 1);
     saveImages();
     displayGallery();
   }
 }
 
-// ==== Clear Gallery ====
-clearGalleryBtn.addEventListener('click', () => {
-  if (confirm('Clear entire gallery?')) {
-    images = [];
-    localStorage.removeItem('galleryImages');
-    displayGallery();
-  }
-});
-// ==== Search / Filter ====
-searchInput.addEventListener('input', () => {
-  console.log(searchInput.value);
-});
-
 displayGallery();
-
