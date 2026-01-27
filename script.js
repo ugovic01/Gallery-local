@@ -26,6 +26,8 @@ function displayGallery(list = images) {
 
     const image = document.createElement('img');
     image.src = img.src;
+    image.addEventListener('click', () => openModal(img.src));
+
 
     const title = document.createElement('p');
     title.textContent = img.title;
@@ -112,3 +114,23 @@ function deleteImage(index) {
 }
 
 displayGallery();
+
+const modal = document.getElementById('modal');
+const modalImg = document.getElementById('modalImg');
+const closeModal = document.getElementById('closeModal');
+
+function openModal(src) {
+  modal.classList.remove('hidden');
+  modalImg.src = src;
+}
+
+closeModal.addEventListener('click', () => {
+  modal.classList.add('hidden');
+});
+
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    modal.classList.add('hidden');
+  }
+});
+
