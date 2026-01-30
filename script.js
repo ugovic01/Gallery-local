@@ -111,3 +111,18 @@ modal.addEventListener('click', e => {
 });
 
 displayGallery();
+
+const darkToggle = document.getElementById('darkToggle');
+
+if (localStorage.getItem('darkMode') === 'on') {
+  document.body.classList.add('dark');
+}
+
+darkToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem(
+    'darkMode',
+    document.body.classList.contains('dark') ? 'on' : 'off'
+  );
+});
+
