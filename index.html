@@ -2,38 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gallery App</title>
+  <title>Gallery Manager</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <h1>My Gallery</h1>
-
+  
   <div class="controls">
     <input type="file" id="imageInput" accept="image/*">
-    <input type="text" id="imageTitle" placeholder="Image title">
-    <button id="addImageBtn">Add Image</button>
-    <button id="clearGalleryBtn">Clear Gallery</button>
+    <input type="text" id="imageTitle" placeholder="Enter image title">
+    <button id="addImageBtn" type="button">Add Image</button>
+    <input type="text" id="searchInput" placeholder="Search images...">
   </div>
 
-  <input 
-    type="text" 
-    id="searchInput" 
-    placeholder="Search images..." 
-    class="search"
-  >
+  <div id="preview"></div>
 
-  <div id="preview" class="preview"></div>
-
-  <div id="gallery" class="gallery"></div>
-
-  
-  <script src="script.js"></script>
+  <div id="gallery"></div>
 
   <div id="modal" class="modal hidden">
-  <span id="closeModal" class="close">&times;</span>
-  <img id="modalImg">
-</div>
+    <span id="closeModal">&times;</span>
+    <img id="modalImg">
+    <p id="modalTitle"></p>
+  </div>
 
+  <script src="script.js"></script>
 </body>
 </html>

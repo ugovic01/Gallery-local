@@ -119,3 +119,38 @@ h1 {
   display: none;
 }
 
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-img {
+  max-width: 80%;
+  max-height: 80%;
+  border-radius: 12px;
+}
+
+.close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: #fff;
+  cursor: pointer;
+}
+
+#modalTitle {
+  position: absolute;
+  bottom: 40px;
+  color: #fff;
+  font-size: 18px;
+}

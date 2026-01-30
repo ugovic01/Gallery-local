@@ -2,45 +2,40 @@ const imageInput = document.getElementById('imageInput');
 const imageTitle = document.getElementById('imageTitle');
 const addImageBtn = document.getElementById('addImageBtn');
 const gallery = document.getElementById('gallery');
-const clearGalleryBtn = document.getElementById('clearGalleryBtn');
 const searchInput = document.getElementById('searchInput');
 const preview = document.getElementById('preview');
 
-let images = JSON.parse(localStorage.getItem('galleryImages')) || [];
+const modal = document.getElementById('modal');
+const modalImg = document.getElementById('modalImg');
+const modalTitle = document.getElementById('modalTitle');
+const closeModal = document.getElementById('closeModal');
 
-function saveImages() {
-  localStorage.setItem('galleryImages', JSON.stringify(images));
-}
+let images = JSON.parse(localStorage.getItem('galleryImages'));
+if (!Array.isArray(images)) images = [];
 
-function displayGallery(list = images) {
+localStorage.setItem('galleryImages', JSON.stringify(images));
+
+function displayGallery(filter = '') {
   gallery.innerHTML = '';
 
-  if (list.length === 0) {
+  const filtered = images.filter(img =>
+    img.title.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  if (filtered.length === 0) {
     gallery.innerHTML = '<p class="empty">No images found.</p>';
     return;
   }
 
-  list.forEach((img, index) => {
+  filtered.forEach((img, index) => {
     const div = document.createElement('div');
     div.className = 'item';
-
-    const image = document.createElement('img');
-    image.src = img.src;
-    image.addEventListener('click', () => openModal(img.src));
-
-
-    const title = document.createElement('p');
-    title.textContent = img.title;
-
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Edit';
-    editBtn.onclick = () => editImage(index);
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.onclick = () => deleteImage(index);
-
-    div.append(image, title, editBtn, deleteBtn);
+    div.innerHTML = `
+      <img src="${img.src}" alt="${img.title}" onclick="openModal(${index})">
+      <p>${img.title}</p>
+      <button onclick="editImage(${index})">Edit</button>
+      <button onclick="deleteImage(${index})">Delete</button>
+    `;
     gallery.appendChild(div);
   });
 }
@@ -50,87 +45,69 @@ imageInput.addEventListener('change', () => {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = () => {
-    preview.innerHTML = `<img src="${reader.result}" />`;
+  reader.onload = e => {
+    preview.innerHTML = `<img src="${e.target.result}">`;
   };
   reader.readAsDataURL(file);
 });
 
-addImageBtn.addEventListener('click', () => {
-  const file = imageInput.files[0];
-  let title = imageTitle.value.trim();
+addImageBtn.addEventListener('click', (e) => {
+  e.preventDefault();
 
-  if (!file) {
-    alert('Select an image first');
+  const file = imageInput.files[0];
+  const title = imageTitle.value.trim();
+
+  if (!file || !title) {
+    alert('Please select an image and enter a title.');
     return;
   }
 
-  if (!title) title = file.name;
-
   const reader = new FileReader();
-  reader.onload = () => {
-    images.push({ src: reader.result, title });
+  reader.onload = e => {
+    images.push({ src: e.target.result, title });
     saveImages();
-    displayGallery();
-
-    imageInput.value = '';
-    imageTitle.value = '';
-    preview.innerHTML = '';
+    displayGallery(searchInput.value);
   };
   reader.readAsDataURL(file);
-});
 
-searchInput.addEventListener('input', () => {
-  const value = searchInput.value.toLowerCase();
-  const filtered = images.filter(img =>
-    img.title.toLowerCase().includes(value)
-  );
-  displayGallery(filtered);
-});
-
-clearGalleryBtn.addEventListener('click', () => {
-  if (confirm('Clear gallery?')) {
-    images = [];
-    localStorage.clear();
-    displayGallery();
-  }
+  imageInput.value = '';
+  imageTitle.value = '';
+  preview.innerHTML = '';
 });
 
 function editImage(index) {
-  const newTitle = prompt('New title:', images[index].title);
-  if (newTitle) {
+  const newTitle = prompt('Enter new title:', images[index].title);
+  if (newTitle && newTitle.trim() !== '') {
     images[index].title = newTitle.trim();
     saveImages();
-    displayGallery();
+    displayGallery(searchInput.value);
   }
 }
 
 function deleteImage(index) {
-  if (confirm('Delete image?')) {
+  if (confirm('Delete this image?')) {
     images.splice(index, 1);
     saveImages();
-    displayGallery();
+    displayGallery(searchInput.value);
   }
 }
 
-displayGallery();
+searchInput.addEventListener('input', () => {
+  displayGallery(searchInput.value);
+});
 
-const modal = document.getElementById('modal');
-const modalImg = document.getElementById('modalImg');
-const closeModal = document.getElementById('closeModal');
-
-function openModal(src) {
+function openModal(index) {
+  modalImg.src = images[index].src;
+  modalTitle.textContent = images[index].title;
   modal.classList.remove('hidden');
-  modalImg.src = src;
 }
 
 closeModal.addEventListener('click', () => {
   modal.classList.add('hidden');
 });
 
-modal.addEventListener('click', (e) => {
-  if (e.target === modal) {
-    modal.classList.add('hidden');
-  }
+modal.addEventListener('click', e => {
+  if (e.target === modal) modal.classList.add('hidden');
 });
 
+displayGallery();
